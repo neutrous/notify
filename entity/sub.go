@@ -34,17 +34,19 @@ type Subscriber struct {
 }
 
 // Uses connecting role to initialze the subscriber instance
-func (sub *Subscriber) InitialConnecting(context *zmq.Context) error {
-	sub.tp = SubName
+func (sub *Subscriber) InitialConnecting(context CommEnv) error {
+	sub.tpstr = SubName
+	sub.tp = zmq.SUB
 	sub.subs = make(map[string]Deserializable)
-	return sub.initial(context, sub.connect, zmq.SUB)
+	return sub.initial(context, sub.connect)
 }
 
 // Uses binding role to intialze the subscriber instance.
-func (sub *Subscriber) InitialBinding(context *zmq.Context) error {
-	sub.tp = SubName
+func (sub *Subscriber) InitialBinding(context CommEnv) error {
+	sub.tpstr = SubName
+	sub.tp = zmq.SUB
 	sub.subs = make(map[string]Deserializable)
-	return sub.initial(context, sub.bind, zmq.SUB)
+	return sub.initial(context, sub.bind)
 }
 
 // Subscribe the specified data type.

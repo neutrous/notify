@@ -22,15 +22,17 @@ type Publisher struct {
 }
 
 // Uses connecting role to intialze the publisher instance.
-func (pub *Publisher) InitialConnecting(context *zmq.Context) error {
-	pub.tp = PubName
-	return pub.initial(context, pub.connect, zmq.PUB)
+func (pub *Publisher) InitialConnecting(context CommEnv) error {
+	pub.tpstr = PubName
+	pub.tp = zmq.PUB
+	return pub.initial(context, pub.connect)
 }
 
 // Uses binding role to intialize the publisher instance.
-func (pub *Publisher) InitialBinding(context *zmq.Context) error {
-	pub.tp = PubName
-	return pub.initial(context, pub.bind, zmq.PUB)
+func (pub *Publisher) InitialBinding(context CommEnv) error {
+	pub.tpstr = PubName
+	pub.tp = zmq.PUB
+	return pub.initial(context, pub.bind)
 }
 
 // Send the specified data, the data must be serializable

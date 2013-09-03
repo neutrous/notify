@@ -10,7 +10,6 @@ import (
 	"log"
 	"time"
 	
-	zmq "github.com/alecthomas/gozmq"
 	"github.com/neutrous/notify/entity"
 	"github.com/neutrous/notify/tests/entity_tests/model"
 	"code.google.com/p/goprotobuf/proto"
@@ -22,7 +21,7 @@ func main() {
 	pub := entity.Publisher{}
 	pub.AppendAddress("tcp://*:6602")
 	
-	context, _ := zmq.NewContext()
+	context, _ := entity.CreateZMQCommEnv(true)
 	defer context.Close()
 
 	if err := pub.InitialBinding(context); err != nil {
@@ -38,6 +37,7 @@ func main() {
 		*value.Type = value.GetType() + 2
 		if err := pub.Write(&value); err != nil {
 			log.Println("Publish value failure.")
+			break
 		} else {
 			log.Println("Publish value okay.")
 		}

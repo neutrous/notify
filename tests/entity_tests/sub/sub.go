@@ -9,7 +9,6 @@ package main
 import (
 	"log"
 	
-	zmq "github.com/alecthomas/gozmq"
 	"github.com/neutrous/notify/entity"
 	"github.com/neutrous/notify/tests/entity_tests/model"
 )
@@ -20,7 +19,7 @@ func main() {
 	sub := entity.Subscriber{}
 	sub.AppendAddress("tcp://localhost:6602")
 	
-	context, _ := zmq.NewContext()
+	context, _ := entity.CreateZMQCommEnv(false)
 	defer context.Close()
 
 	if err := sub.InitialConnecting(context); err != nil {
@@ -32,6 +31,8 @@ func main() {
 	if err := sub.Subscribe(value); err != nil {
 		log.Fatalln("Subscribe example.Test data type failure.")
 	}
+	
+	log.Println("Start receiving datas.")
 
 	sub.ReceivingEvent()
 }

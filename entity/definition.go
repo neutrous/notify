@@ -15,6 +15,27 @@ import (
 type Address string
 type Addresses []Address
 
+// Indicates the level of logging function.
+var logLevel = 1
+const (
+	Critical = iota
+	Warning
+	Notify
+	Debug
+)
+
+// The specified lvl indicates which levels to be logged. In other
+// words, if lvl is Warning, only Critical and Warning level loggs
+// would be record.
+func SetLoggingLevel(lvl int) { 
+	if lvl < Critical { 
+		lvl = Critical 
+	} else if lvl > Debug { 
+		lvl = Debug 
+	} 
+	logLevel = lvl 
+}
+
 type Serializable interface {
 	// The typename used to identify the data
 	Name() string
@@ -33,15 +54,17 @@ type Endpoint struct {
 	Addr Addresses
 	sock *zmq.Socket
 	err  error
-	tp   string					// Indicates the type name of entity
+	tpstr string					// Indicates the type name of entity
+	tp   zmq.SocketType
+	ctx  CommEnv
 }
 
 // Determine the different action in context
 type action func(addr Address) error
 
 // Tell the instance to initialize the information.
-func (ep *Endpoint) initial(context *zmq.Context,
-	act action, tp zmq.SocketType) error {
+func (ep *Endpoint) initial(context CommEnv,
+	act action) error {
 
 	if ep.sock != nil {
 		return errors.New("Instance has already been initialized.")
@@ -52,8 +75,7 @@ func (ep *Endpoint) initial(context *zmq.Context,
 		return errors.New("Specified context is null.")
 	}
 
-	var err error
-	ep.sock, err = context.NewSocket(tp)
+	err := context.addEntity(ep)
 	if err != nil {
 		return err
 	}
@@ -73,31 +95,29 @@ func (ep *Endpoint) initial(context *zmq.Context,
 }
 
 func (ep *Endpoint) handleError(err error) error {
-	ep.sock.Close()
+	ep.Destroy()
 	return err
 }
 
 // Destroy the initialized publisher instance.
 func (ep *Endpoint) Destroy() {
-	if ep.sock != nil {
-		ep.sock.Close()
-	}
+	ep.ctx.removeEntity(ep)
 }
 
 func (ep *Endpoint) connect(addr Address) (err error) {
 	err = ep.sock.Connect(string(addr))
-	if err != nil {
+	if err != nil && logLevel >= Debug {
 		log.Printf("%s bind on the address %s failure.\n",
-			ep.tp, addr)
+			ep.tpstr, addr)
 	}
 	return
 }
 
 func (ep *Endpoint) bind(addr Address) (err error) {
 	err = ep.sock.Bind(string(addr))
-	if err != nil {
+	if err != nil && logLevel >= Debug {
 		log.Printf("%s bind on the address %s failure.\n",
-			ep.tp, addr)
+			ep.tpstr, addr)
 	}
 	return
 }
