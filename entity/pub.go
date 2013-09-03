@@ -21,14 +21,24 @@ type Publisher struct {
 	Endpoint
 }
 
-// Uses connecting role to intialze the publisher instance.
+// Serializer defines the required method to marshal the application
+// relevant datas into byte array.
+type Serializer interface {
+	// The typename used to identify the data
+	Name() string
+	// Serialize the data into byte array
+	Serialize() ([]byte, error)
+}
+
+// InitialConnecting uses connecting role to intialze the publisher
+// instance.
 func (pub *Publisher) InitialConnecting(context CommEnv) error {
 	pub.tpstr = PubName
 	pub.tp = zmq.PUB
 	return pub.initial(context, pub.connect)
 }
 
-// Uses binding role to intialize the publisher instance.
+// InitialBinding uses binding role to intialize the publisher instance.
 func (pub *Publisher) InitialBinding(context CommEnv) error {
 	pub.tpstr = PubName
 	pub.tp = zmq.PUB
@@ -36,7 +46,7 @@ func (pub *Publisher) InitialBinding(context CommEnv) error {
 }
 
 // Send the specified data, the data must be serializable
-func (pub *Publisher) Write(data Serializable) error {
+func (pub *Publisher) Send(data Serializer) error {
 	if pub.sock == nil || pub.err != nil {
 		return errors.New("Publisher hasn't been initialized.")
 	}

@@ -17,7 +17,9 @@ const (
 	SubName = "Subscriber"
 )
 
-type Deserializable interface {
+// Deserializer defines the required methods to demarshal the
+// specified raw bytes array to application relevant datas.
+type Deserializer interface {
 	// The typename of which the interface support to decode.
 	Name() string
 	// Callback, the subscriber would invoke this method to give
@@ -30,14 +32,14 @@ type Deserializable interface {
 // Abstraction for subscriber
 type Subscriber struct {
 	Endpoint
-	subs map[string]Deserializable
+	subs map[string]Deserializer
 }
 
 // Uses connecting role to initialze the subscriber instance
 func (sub *Subscriber) InitialConnecting(context CommEnv) error {
 	sub.tpstr = SubName
 	sub.tp = zmq.SUB
-	sub.subs = make(map[string]Deserializable)
+	sub.subs = make(map[string]Deserializer)
 	return sub.initial(context, sub.connect)
 }
 
@@ -45,12 +47,12 @@ func (sub *Subscriber) InitialConnecting(context CommEnv) error {
 func (sub *Subscriber) InitialBinding(context CommEnv) error {
 	sub.tpstr = SubName
 	sub.tp = zmq.SUB
-	sub.subs = make(map[string]Deserializable)
+	sub.subs = make(map[string]Deserializer)
 	return sub.initial(context, sub.bind)
 }
 
 // Subscribe the specified data type.
-func (sub *Subscriber) Subscribe(inst Deserializable) error {
+func (sub *Subscriber) Subscribe(inst Deserializer) error {
 	if _, ok := sub.subs[inst.Name()]; ok {
 		return errors.New("Specified data has already been subscribed.")
 	}
@@ -90,7 +92,7 @@ func (sub *Subscriber) UnSubscribeByName(tpname string) error {
 }
 
 // Overload of unsubscription function.
-func (sub *Subscriber) UnSubscribe(inst Deserializable) error {
+func (sub *Subscriber) UnSubscribe(inst Deserializer) error {
 	return sub.UnSubscribeByName(inst.Name())
 }
 

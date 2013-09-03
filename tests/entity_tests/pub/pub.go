@@ -35,7 +35,7 @@ func main() {
 	for {
 		time.Sleep(time.Second)
 		*value.Type = value.GetType() + 2
-		if err := pub.Write(&value); err != nil {
+		if err := pub.Send(&value); err != nil {
 			log.Println("Publish value failure.")
 			break
 		} else {

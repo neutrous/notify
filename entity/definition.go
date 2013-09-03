@@ -36,13 +36,6 @@ func SetLoggingLevel(lvl int) {
 	logLevel = lvl 
 }
 
-type Serializable interface {
-	// The typename used to identify the data
-	Name() string
-	// Serialize the data into byte array
-	Serialize() ([]byte, error)
-}
-
 // Indicate whether specified addr is valid.
 func (addr *Address) valid() bool {
 	// TODO: uses reg to valid the specified address.
@@ -124,7 +117,7 @@ func (ep *Endpoint) bind(addr Address) (err error) {
 	return
 }
 
-// Append relevant addresses into publisher
+// AppendAdress append relevant addresses into publisher instance.
 func (obj *Endpoint) AppendAddress(addr Address) {
 	obj.Addr = append(obj.Addr, addr)
 }
