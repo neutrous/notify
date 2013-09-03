@@ -16,8 +16,8 @@ func bindingPub(addr Address) error {
 	inst := Publisher{}
 	inst.Addr = make([]Address, 1)
 	inst.Addr[0] = addr
-
-	context, _ := CreateZMQCommEnv()
+	
+	context, _ := CreateZMQCommEnv(false)
 	defer context.Close()
 
 	return inst.InitialBinding(context)
@@ -33,7 +33,19 @@ func TestBindingTcp(t *testing.T) {
 
 // unknown address type shouldn't be bindable
 func TestBindingUnknownType(t *testing.T) {
-	if err := bindingPub("unk://*:231"); err == nil {
-		t.Errorf("Specified address [unk://*:231] is not available, but return value indicates accepted.\n")
-	}
+	if err := bindingPub("unk://*:231"); err != nil {
+		return
+	}	
+	t.Errorf("Specified address [unk://*:231] is not available, but return value indicates accepted.\n")
+
 }
+
+
+
+
+
+
+
+
+
+

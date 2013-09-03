@@ -101,7 +101,9 @@ func (ep *Endpoint) handleError(err error) error {
 
 // Destroy the initialized publisher instance.
 func (ep *Endpoint) Destroy() {
-	ep.ctx.removeEntity(ep)
+	if ep.ctx != nil {
+		ep.ctx.removeEntity(ep)
+	}
 }
 
 func (ep *Endpoint) connect(addr Address) (err error) {

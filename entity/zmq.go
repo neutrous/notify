@@ -30,10 +30,10 @@ func CreateZMQCommEnv(handleSig bool) (CommEnv, error) {
 		return nil, err
 	}
 	retval.entities = make(map[*Endpoint]bool)
+	retval.handleSig = handleSig
 	if handleSig {
 		sig := make(chan os.Signal)
 		signal.Notify(sig)
-		retval.handleSig = handleSig
 
 		go retval.handleSignal(sig)
 	}
@@ -60,7 +60,7 @@ func (zmq *ZMQContext) addEntity(obj *Endpoint) error {
 
 func (zmq *ZMQContext) removeEntity(obj *Endpoint) {
 	if _, ok := zmq.entities[obj]; ok {
-		if obj.sock != nil && obj.err != nil {
+		if obj.sock != nil {
 			obj.sock.Close()
 		}
 		delete(zmq.entities, obj)
@@ -87,8 +87,12 @@ func (zmq *ZMQContext) Close() {
 }
 
 func (zmq *ZMQContext) clearAndDestroy() {
-	for key, _ := range zmq.entities {
-		key.sock.Close()
+	if zmq.ctx != nil {
+		for key, _ := range zmq.entities {
+			key.sock.Close()
+		}
+		// remove all entities
+		zmq.entities = nil
+		zmq.ctx.Close()
 	}
-	zmq.ctx.Close()
 }
