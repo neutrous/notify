@@ -1,15 +1,15 @@
-// 
+//
 // Subscription side's relevant entities.
-// 
+//
 // Author: neutrous
 // Requires: github.com/alecthomas/gozmq
-// 
+//
 package entity
 
 import (
 	"errors"
 	"log"
-	
+
 	zmq "github.com/alecthomas/gozmq"
 )
 
@@ -29,26 +29,18 @@ type Deserializer interface {
 	Deserialize(data []byte) (interface{}, bool)
 }
 
-// Abstraction for subscriber
+// Subscriber is a abstraction for subscriber
 type Subscriber struct {
-	Endpoint
+	endpoint
 	subs map[string]Deserializer
 }
 
-// Uses connecting role to initialze the subscriber instance
-func (sub *Subscriber) InitialConnecting(context CommEnv) error {
-	sub.tpstr = SubName
-	sub.tp = zmq.SUB
-	sub.subs = make(map[string]Deserializer)
-	return sub.initial(context, sub.connect)
-}
-
-// Uses binding role to intialze the subscriber instance.
-func (sub *Subscriber) InitialBinding(context CommEnv) error {
-	sub.tpstr = SubName
-	sub.tp = zmq.SUB
-	sub.subs = make(map[string]Deserializer)
-	return sub.initial(context, sub.bind)
+// NewSubscriber creates a initialized instance of Subscriber.
+// WARNING!!! User should call this method to create a new instance
+// of Subscriber, not do it by himself.
+func NewSubscriber() *Subscriber {
+	return &Subscriber{endpoint: endpoint{tpstr: SubName, tp: zmq.SUB},
+		subs: make(map[string]Deserializer)}
 }
 
 // Subscribe the specified data type.
@@ -56,18 +48,18 @@ func (sub *Subscriber) Subscribe(inst Deserializer) error {
 	if _, ok := sub.subs[inst.Name()]; ok {
 		return errors.New("Specified data has already been subscribed.")
 	}
-	
+
 	if err := sub.initiaFailure(); err != nil {
 		return err
 	}
 
 	// Change the subscribe behavior
-	if err := sub.sock.SetSockOptString(zmq.SUBSCRIBE, 
+	if err := sub.sock.SetSockOptString(zmq.SUBSCRIBE,
 		inst.Name()); err != nil {
 		return err
 	}
 	sub.subs[inst.Name()] = inst
-	
+
 	return nil
 }
 
@@ -76,7 +68,7 @@ func (sub *Subscriber) UnSubscribeByName(tpname string) error {
 	if _, ok := sub.subs[tpname]; !ok {
 		return errors.New("Specified data hasn't been subscribed.")
 	}
-	
+
 	if err := sub.initiaFailure(); err != nil {
 		return err
 	}
@@ -84,10 +76,10 @@ func (sub *Subscriber) UnSubscribeByName(tpname string) error {
 	// Change the subscription behavior
 	if err := sub.sock.SetSockOptString(zmq.UNSUBSCRIBE,
 		tpname); err != nil {
-			return err
-		}
+		return err
+	}
 	delete(sub.subs, tpname)
-	
+
 	return nil
 }
 
@@ -101,7 +93,7 @@ func (sub *Subscriber) ReceivingEvent() error {
 	if err := sub.initiaFailure(); err != nil {
 		return err
 	}
-	
+
 	// Loop for subscribing packages.
 	for {
 		msgbytes, err := sub.sock.RecvMultipart(0)
