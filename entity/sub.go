@@ -106,8 +106,13 @@ func (sub *Subscriber) ReceivingEvent() error {
 	for {
 		msgbytes, err := sub.sock.RecvMultipart(0)
 		if err != nil {
+			if err == zmq.ENOTSOCK || err == zmq.ETERM {
+				// socket has been closed or env terminated.
+				log.Println("ReceivingEvent gracefully terminated.")
+				return nil
+			}
 			log.Println("ReceivingEvent failure: ", err)
-			continue
+			return err
 		}
 		// Currently, we known every packages have only two parts.
 		// The first part indicates the type name;
