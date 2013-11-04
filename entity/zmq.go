@@ -17,7 +17,7 @@ import (
 // Uses zmq to implement the interface entityCommEnv
 type ZMQContext struct {
 	ctx       *zmq.Context
-	entities  map[*Endpoint]bool
+	entities  map[*endpoint]bool
 	handleSig bool
 }
 
@@ -29,7 +29,7 @@ func CreateZMQCommEnv(handleSig bool) (CommEnv, error) {
 	if err != nil {
 		return nil, err
 	}
-	retval.entities = make(map[*Endpoint]bool)
+	retval.entities = make(map[*endpoint]bool)
 	retval.handleSig = handleSig
 	if handleSig {
 		sig := make(chan os.Signal)
@@ -40,7 +40,7 @@ func CreateZMQCommEnv(handleSig bool) (CommEnv, error) {
 	return retval, nil
 }
 
-func (zmq *ZMQContext) addEntity(obj *Endpoint) error {
+func (zmq *ZMQContext) addEntity(obj *endpoint) error {
 	if _, ok := zmq.entities[obj]; ok {
 		return errors.New("Already contained this entity.")
 	}
@@ -58,7 +58,7 @@ func (zmq *ZMQContext) addEntity(obj *Endpoint) error {
 	return nil
 }
 
-func (zmq *ZMQContext) removeEntity(obj *Endpoint) {
+func (zmq *ZMQContext) removeEntity(obj *endpoint) {
 	if _, ok := zmq.entities[obj]; ok {
 		if obj.sock != nil {
 			obj.sock.Close()

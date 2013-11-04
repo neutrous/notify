@@ -9,30 +9,12 @@ import (
 	"os"
 )
 
-// Abstraction of communication environment.
+// CommEnv abstracts the communication environment.
 type CommEnv interface {
-	addEntity(obj *Endpoint) error
-	removeEntity(obj *Endpoint)
+	addEntity(obj *endpoint) error
+	removeEntity(obj *endpoint)
 	
 	handleSignal(sig chan os.Signal)
 	Close()
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

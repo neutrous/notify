@@ -13,10 +13,9 @@ import (
 
 func bindingPub(addr Address) error {
 
-	inst := Publisher{}
-	inst.Addr = make([]Address, 1)
-	inst.Addr[0] = addr
-	
+	inst := NewPublisher()
+	inst.AppendAddress(addr)
+		
 	context, _ := CreateZMQCommEnv(false)
 	defer context.Close()
 

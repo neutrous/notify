@@ -16,7 +16,7 @@ import (
 func main() {
 	
 	// Initialize subscriber
-	sub := entity.Subscriber{}
+	sub := entity.NewSubscriber()
 	sub.AppendAddress("tcp://localhost:6602")
 	
 	context, _ := entity.CreateZMQCommEnv(false)

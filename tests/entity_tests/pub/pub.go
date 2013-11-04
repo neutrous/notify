@@ -18,7 +18,7 @@ import (
 func main() {
 	
 	// Initialize publisher
-	pub := entity.Publisher{}
+	pub := entity.NewPublisher() 
 	pub.AppendAddress("tcp://*:6602")
 	
 	context, _ := entity.CreateZMQCommEnv(true)

@@ -8,18 +8,13 @@ package entity
 
 import (
 	"errors"
-	
+
 	zmq "github.com/alecthomas/gozmq"
 )
 
 const (
 	PubName = "Publisher"
 )
-
-// Abstraction for publisher
-type Publisher struct {
-	Endpoint
-}
 
 // Serializer defines the required method to marshal the application
 // relevant datas into byte array.
@@ -30,19 +25,16 @@ type Serializer interface {
 	Serialize() ([]byte, error)
 }
 
-// InitialConnecting uses connecting role to intialze the publisher
-// instance.
-func (pub *Publisher) InitialConnecting(context CommEnv) error {
-	pub.tpstr = PubName
-	pub.tp = zmq.PUB
-	return pub.initial(context, pub.connect)
+// Abstraction for publisher
+type Publisher struct {
+	endpoint
 }
 
-// InitialBinding uses binding role to intialize the publisher instance.
-func (pub *Publisher) InitialBinding(context CommEnv) error {
-	pub.tpstr = PubName
-	pub.tp = zmq.PUB
-	return pub.initial(context, pub.bind)
+// NewPublisher creates a initialized publisher instance.
+// WARNING!!! User should all this method to create a instance
+// of Publisher, not by himself.
+func NewPublisher() *Publisher {
+	return &Publisher{endpoint{tp: zmq.PUB, tpstr: PubName}}
 }
 
 // Send the specified data, the data must be serializable
@@ -55,7 +47,7 @@ func (pub *Publisher) Send(data Serializer) error {
 	parts := make([][]byte, 2)
 	parts[0] = make([]byte, len(data.Name()))
 	copy(parts[0], data.Name())
-	
+
 	// Construct the data content
 	content, err := data.Serialize()
 	if err != nil {
@@ -66,4 +58,3 @@ func (pub *Publisher) Send(data Serializer) error {
 
 	return pub.sock.SendMultipart(parts, 0)
 }
-
