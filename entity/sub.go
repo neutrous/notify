@@ -45,6 +45,10 @@ func NewSubscriber() *Subscriber {
 
 // Subscribe the specified data type.
 func (sub *Subscriber) Subscribe(inst Deserializer) error {
+	if inst == nil {
+		return errors.New("Couldn't subscribe nil data.")
+	}
+
 	if _, ok := sub.subs[inst.Name()]; ok {
 		return errors.New("Specified data has already been subscribed.")
 	}

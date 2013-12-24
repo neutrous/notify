@@ -37,13 +37,13 @@ func SetLoggingLevel(lvl int) {
 	logLevel = lvl
 }
 
-// Indicate whether specified addr is valid.
+// valid determines whether specified addr is valid.
 func (addr *Address) valid() bool {
 	// TODO: uses reg to valid the specified address.
 	return true
 }
 
-// Abstraction for I/O on the net's entities.
+// endpoint is an abstraction for I/O on the net's entities.
 type endpoint struct {
 	addr  Addresses
 	sock  *zmq.Socket
@@ -132,4 +132,11 @@ func (obj *endpoint) InitialConnecting(context CommEnv) error {
 // InitialBinding uses binding role to initialize the endpoint instance.
 func (obj *endpoint) InitialBinding(context CommEnv) error {
 	return obj.initial(context, obj.bind)
+}
+
+// Close release the resource occupied by the obj.
+func (obj *endpoint) Close() {
+	if obj.sock != nil {
+		obj.sock.Close()
+	}
 }

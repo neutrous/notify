@@ -1,8 +1,8 @@
-// 
+//
 // Abstraction of communication environment.
-// 
+//
 // Author: neutrous
-// 
+//
 package entity
 
 import (
@@ -13,8 +13,7 @@ import (
 type CommEnv interface {
 	addEntity(obj *endpoint) error
 	removeEntity(obj *endpoint)
-	
+
 	handleSignal(sig chan os.Signal)
 	Close()
 }
-

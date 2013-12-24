@@ -31,8 +31,8 @@ type Publisher struct {
 }
 
 // NewPublisher creates a initialized publisher instance.
-// WARNING!!! User should all this method to create a instance
-// of Publisher, not by himself.
+// WARNING!!! User should use this method to create a instance
+// of Publisher, not by itself.
 func NewPublisher() *Publisher {
 	return &Publisher{endpoint{tp: zmq.PUB, tpstr: PubName}}
 }
@@ -41,6 +41,10 @@ func NewPublisher() *Publisher {
 func (pub *Publisher) Send(data Serializer) error {
 	if pub.sock == nil || pub.err != nil {
 		return errors.New("Publisher hasn't been initialized.")
+	}
+
+	if data == nil {
+		return errors.New("Couldn't send nil data.")
 	}
 
 	// Construct the data header/name

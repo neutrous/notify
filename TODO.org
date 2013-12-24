@@ -1,0 +1,19 @@
+# This file contains every need to be changed thoughts at present we knowing.
+
+* TODO Publisher/Subscriber 如何处理通过ZeroMQ传送来的数据结构
+
+  虽然底层通过ZeroMQ来进行传输，且在其之上已将结构化的数据内容通过protobuf的方式
+进行过一次封装。我们仍须对如何传送protobuf的内容进行设计，目前只是简单的使用ZeroMQ
+支持的列表传送方式（`SendMultipart'）来将一份数据分为两块部分。
+
+  简单的说，现在的通信数据结构使用下述格式：
+
+  + ------------ + -------------------- +
+  |              |                      |
+  | 数据类型名称  | 使用protobuf封装的内容 |
+  |              |                      |
+  + ------------ + -------------------- +
+
+  这种设计实现起来很简单，但是在未来扩展时很容易出问题，比如潜在的过滤和加密问题。
+
+  涉及到的文件有`entity/pub.go'和`entity/sub.go'。

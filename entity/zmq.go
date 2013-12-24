@@ -80,6 +80,8 @@ func (zmq *ZMQContext) handleSignal(sig chan os.Signal) {
 
 func (zmq *ZMQContext) Close() {
 	if zmq.handleSig {
+		// if need handle the signal, just let the handler to do the
+		// clear action.
 		os.Kill.Signal()
 	} else {
 		zmq.clearAndDestroy()
