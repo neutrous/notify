@@ -12,7 +12,7 @@ import (
 )
 
 func connectSub(addr Address, context CommEnv) (*Subscriber, error) {
-	inst := NewSubscriber()
+	inst := NewSubscriber(int32(1))
 	inst.AppendAddress(addr)
 
 	return inst, inst.InitialConnecting(context)
@@ -44,16 +44,23 @@ func TestSubscribeData(t *testing.T) {
 
 	if inst, err := connectSub("tcp://127.0.0.1:6621", context); err == nil {
 		if inst.Subscribe(nil) == nil {
-			t.Errorf("Shouldn't be subcribing nil data.\n")
+			t.Errorf("Shouldn't be subscribing nil data.\n")
 		}
 		if inst.Subscribe(&testData{}) != nil {
 			t.Errorf("Subscribe failure.\n")
 		}
+		if inst.UnSubscribe(&testData{}) != nil {
+			t.Errorf("Unsubscribe by instance failure.\n")
+		}
+		// test another unsubscribe
+		data := &testData{}
+		if inst.Subscribe(data) != nil {
+			t.Errorf("Subscribe failure.\n")
+		}
+		if inst.UnSubscribeByName(data.Name()) != nil {
+			t.Errorf("UnSubscribe by name failure.\n")
+		}
 	} else {
 		t.Errorf("Initialized failure.\n")
 	}
-}
-
-func TestUnsubscribe(t *testing.T) {
-	// TODO
 }

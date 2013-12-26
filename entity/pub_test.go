@@ -75,7 +75,7 @@ func TestSendSerializedData(t *testing.T) {
 		gen := func() Serializer {
 			return &testData{}
 		}
-		if inst.Send(gen()) != nil {
+		if inst.Send(1, gen()) != nil {
 			t.Errorf("Sending failure.\n")
 		}
 		return

@@ -7,7 +7,9 @@
 package entity
 
 import (
+	"encoding/binary"
 	"errors"
+	"time"
 
 	zmq "github.com/alecthomas/gozmq"
 )
@@ -37,8 +39,23 @@ func NewPublisher() *Publisher {
 	return &Publisher{endpoint{tp: zmq.PUB, tpstr: PubName}}
 }
 
-// Send the specified data, the data must be serializable
-func (pub *Publisher) Send(data Serializer) error {
+// Broadcast make the data to all of the attached subscribers.
+// func (pub *Publisher) Broadcast(data ...Serializer) error {
+// 	return pub.send_with_filter([]byte{}, data...)
+// }
+
+// Send make the data to the specified subscriber who aims to
+// receive the data with flag of filter.
+// WARNING!!! Currently, the filter should be integer value.
+func (pub *Publisher) Send(filter interface{}, data ...Serializer) error {
+	// create filter value every time.
+	if filter_bytes := create_filter_bytes(filter); filter_bytes != nil {
+		return pub.send_with_filter(filter_bytes, data...)
+	}
+	return errors.New("unknown type")
+}
+
+func (pub *Publisher) send_with_filter(filter []byte, data ...Serializer) error {
 	if pub.sock == nil || pub.err != nil {
 		return errors.New("Publisher hasn't been initialized.")
 	}
@@ -47,18 +64,31 @@ func (pub *Publisher) Send(data Serializer) error {
 		return errors.New("Couldn't send nil data.")
 	}
 
-	// Construct the data header/name
-	parts := make([][]byte, 2)
-	parts[0] = make([]byte, len(data.Name()))
-	copy(parts[0], data.Name())
+	// Construct the data.
+	// The protocol is described in `push_service', please refer to
+	// it for details.
+	parts := make([][]byte, 3+2*len(data))
+	filter_len := len(filter)
+	parts[0] = make([]byte, len(string(filter)))
+	if filter_len != 0 {
+		copy(parts[0], string(filter))
+	}
+	parts[1] = make([]byte, len(ProtocolName))
+	parts[2] = make([]byte, 8)
+	copy(parts[1], ProtocolName)
+	binary.LittleEndian.PutUint64(parts[2], uint64(time.Now().Unix()))
 
 	// Construct the data content
-	content, err := data.Serialize()
-	if err != nil {
-		return err
+	for idx := 0; idx < len(data); idx += 2 {
+		content, err := data[idx].Serialize()
+		if err != nil {
+			return err
+		}
+		parts[3+idx] = make([]byte, len(data[idx].Name()))
+		copy(parts[3+idx], data[idx].Name())
+		parts[4+idx] = make([]byte, len(content))
+		copy(parts[4+idx], content)
 	}
-	parts[1] = make([]byte, len(content))
-	copy(parts[1], content)
 
 	return pub.sock.SendMultipart(parts, 0)
 }

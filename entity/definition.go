@@ -6,6 +6,7 @@
 package entity
 
 import (
+	"encoding/binary"
 	"errors"
 	"log"
 
@@ -23,6 +24,10 @@ const (
 	Warning
 	Notify
 	Debug
+)
+
+const (
+	ProtocolName = "HFPP/1.0"
 )
 
 // The specified lvl indicates which levels to be logged. In other
@@ -139,4 +144,31 @@ func (obj *endpoint) Close() {
 	if obj.sock != nil {
 		obj.sock.Close()
 	}
+}
+
+func create_filter_bytes(filter interface{}) []byte {
+	// Force to 8 byte
+	filter_bytes := make([]byte, 8)
+	switch filter.(type) {
+	case int:
+		binary.LittleEndian.PutUint64(filter_bytes, uint64(filter.(int)))
+	case int32:
+		binary.LittleEndian.PutUint64(filter_bytes, uint64(filter.(int32)))
+	case int16:
+		binary.LittleEndian.PutUint64(filter_bytes, uint64(filter.(int16)))
+	case uint:
+		binary.LittleEndian.PutUint64(filter_bytes, uint64(filter.(uint)))
+	case uint16:
+		binary.LittleEndian.PutUint64(filter_bytes, uint64(filter.(uint16)))
+	case uint32:
+		binary.LittleEndian.PutUint64(filter_bytes, uint64(filter.(uint32)))
+	case int64:
+		binary.LittleEndian.PutUint64(filter_bytes, uint64(filter.(int64)))
+	case uint64:
+		binary.LittleEndian.PutUint64(filter_bytes, uint64(filter.(uint64)))
+	default:
+		filter_bytes = nil
+	}
+
+	return filter_bytes
 }
