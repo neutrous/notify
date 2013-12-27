@@ -7,6 +7,7 @@ package entity_test
 
 import (
 	"log"
+	"math/rand"
 	"testing"
 	"time"
 
@@ -140,4 +141,45 @@ func TestCommEnv(t *testing.T) {
 	if ret2.ReceivedCount != 0 {
 		t.Errorf("Should receive none package while got %d.\n", ret2.ReceivedCount)
 	}
+}
+
+func TestSendMultiPackages(t *testing.T) {
+	context, _ := CreateZMQCommEnv(false)
+
+	pub := NewPublisher()
+	pub.AppendAddress("tcp://*:6624")
+
+	data := &testStruct{}
+
+	if pub.InitialBinding(context) != nil {
+		t.Errorf("Publication initialized failuer.\n")
+	}
+
+	go subscribe(context, filter1, data, "tcp://localhost:6624")
+
+	// Wait for connection.
+	time.Sleep(time.Second)
+
+	totalcount := 0
+	for idx := 0; idx < 10; idx++ {
+		subpackages_count := rand.Intn(5)
+		totalcount += subpackages_count
+		datas := make([]Serializer, subpackages_count)
+		for i := 0; i < subpackages_count; i++ {
+			datas[i] = &testStruct{}
+		}
+		if pub.Send(filter1, datas...) != nil {
+			t.Errorf("Send multipackages failure.\n")
+		}
+	}
+
+	// Wait for receiving.
+	time.Sleep(time.Second)
+
+	context.Close()
+	if totalcount != data.ReceivedCount {
+		t.Errorf("Expect receive %d packages, while got %d.\n",
+			totalcount, data.ReceivedCount)
+	}
+
 }

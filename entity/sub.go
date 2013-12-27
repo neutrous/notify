@@ -106,7 +106,7 @@ func (sub *Subscriber) UnSubscribe(inst Deserializer) error {
 	return sub.UnSubscribeByName(inst.Name())
 }
 
-// Data receiving event, which will be blocked.
+// ReceivingEvent starts a data receiving event loop, which would be blocked.
 // User could use relevant CommEnv instant or the subscriber instant to
 // make this function return, by calling its Close Method.
 func (sub *Subscriber) ReceivingEvent() error {

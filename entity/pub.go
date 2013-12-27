@@ -79,13 +79,13 @@ func (pub *Publisher) send_with_filter(filter []byte, data ...Serializer) error 
 	binary.LittleEndian.PutUint64(parts[2], uint64(time.Now().Unix()))
 
 	// Construct the data content
-	for idx := 0; idx < len(data); idx += 2 {
-		content, err := data[idx].Serialize()
+	for i, idx := 0, 0; i < len(data); i, idx = i+1, idx+2 {
+		content, err := data[i].Serialize()
 		if err != nil {
 			return err
 		}
-		parts[3+idx] = make([]byte, len(data[idx].Name()))
-		copy(parts[3+idx], data[idx].Name())
+		parts[3+idx] = make([]byte, len(data[i].Name()))
+		copy(parts[3+idx], data[i].Name())
 		parts[4+idx] = make([]byte, len(content))
 		copy(parts[4+idx], content)
 	}
