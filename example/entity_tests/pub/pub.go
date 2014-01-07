@@ -12,7 +12,7 @@ import (
 
 	"code.google.com/p/goprotobuf/proto"
 	"github.com/neutrous/notify/entity"
-	"github.com/neutrous/notify/tests/entity_tests/model"
+	"github.com/neutrous/notify/example/entity_tests/model"
 )
 
 const (
